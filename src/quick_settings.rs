@@ -71,7 +71,13 @@ pub fn slider_style() -> SliderStyle {
 }
 
 pub fn panel(output: Output) -> Div {
-    let _ = output;
+    let screen_h = output.logical_size.height as f32;
+    let at = crate::placement::current();
+    let top_margin = if at.is_vertical() { 8.0_f32 } else { at.clearance() };
+    let bottom_margin = if at.is_vertical() { 14.0_f32 } else { 8.0_f32 };
+    let padding_y = 32.0_f32; // 16px top + 16px bottom padding on outer panel
+    let max_inner_h = (screen_h - top_margin - bottom_margin - padding_y).max(100.0_f32);
+
     let page = signal(START.with(|s| s.replace(Page::Main)));
     PAGE.with(|p| p.set(Some(page)));
     // The pages lie over each other, so the panel takes the height of the one shown, going to that
@@ -82,10 +88,11 @@ pub fn panel(output: Output) -> Div {
         if untrack(|| page.get()) != which {
             return;
         }
+        let target = h.min(max_inner_h);
         if sized.replace(true) {
-            height.spring_to(h, fast_spatial());
+            height.spring_to(target, fast_spatial());
         } else {
-            height.set(h);
+            height.set(target);
         }
     });
     let page_view = |which: Page, build: fn() -> Div, from: f32| {
@@ -94,12 +101,18 @@ pub fn panel(output: Output) -> Div {
             move || page.get() == which,
             move || {
                 let fit = fit.clone();
-                build()
+                div()
                     .absolute()
                     .top(0.0)
                     .left(0.0)
                     .right(0.0)
-                    .on_resized(move |_, h| fit(which, h))
+                    .bottom(0.0)
+                    .overflow_y_scroll()
+                    .child(
+                        build()
+                            .w_full()
+                            .on_resized(move |_, h| fit(which, h)),
+                    )
             },
         )
         .enter(move |s| s.opacity(0.0_f32).translate_x(from))

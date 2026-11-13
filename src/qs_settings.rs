@@ -19,13 +19,14 @@ pub fn settings_page() -> Div {
         .flex()
         .flex_col()
         .gap(12.0_f32)
+        .pb(8.0_f32)
         .child(header("Settings", div()))
         .child(settle_in(1, account_section()))
         .child(settle_in(2, style_section()))
         .child(settle_in(3, bar_section()))
         .child(settle_in(4, clock_section()))
         .child(settle_in(5, privacy_section()))
-        .child(settle_in(5, screenrec_section()))
+        .child(settle_in(6, screenrec_section()))
 }
 
 /// The heading of a section: an icon and its name.

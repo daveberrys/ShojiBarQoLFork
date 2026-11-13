@@ -234,7 +234,7 @@ fn start_recording() {
             RECORDER_PID.store(0, Ordering::SeqCst);
             to_ui.send(RecordEvent::Stopped);
 
-            let success = status.map_or(false, |s| s.success());
+            let success = status.is_ok_and(|s| s.success());
             if success && output_path.exists() {
                 let _ = Command::new("notify-send")
                     .args([

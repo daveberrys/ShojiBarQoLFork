@@ -236,6 +236,7 @@ impl Settings {
         }
         if let Some(b) = bool_of("hide_notification_details") {
             s.hide_notification_details = b;
+        }
         if let Some(r) = str_of("screenrec_aspect_ratio") {
             s.screenrec_aspect_ratio = r.to_string();
         }
