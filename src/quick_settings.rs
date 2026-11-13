@@ -225,6 +225,7 @@ fn header() -> Div {
                             .dyn_style(|s| s.text_color(colors().on_surface_variant)),
                         ),
                 )
+                .child(crate::screenrec::screenrec_button())
                 .child(
                     icon_btn(icons::SETTINGS, 34.0, |c| c.on_surface_variant)
                         .on_click(|_| go(Page::Settings)),

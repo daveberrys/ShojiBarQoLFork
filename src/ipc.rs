@@ -152,6 +152,10 @@ fn run(line: &str) -> Result<String, String> {
             panels::close();
             Ok(String::new())
         }
+        ["record" | "screenrec"] => {
+            crate::screenrec::toggle_recording();
+            Ok(String::new())
+        }
         ["theme", mode] => {
             let mode = match *mode {
                 "dark" => ThemeMode::Dark,

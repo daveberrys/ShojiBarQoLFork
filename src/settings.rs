@@ -139,6 +139,10 @@ pub struct Settings {
     pub hide_notification_details: bool,
     /// The user's picture, a copy kept next to this file; `None` for the desktop's.
     pub avatar: Option<PathBuf>,
+    /// Aspect ratio for screen recording (e.g. "16:9", "4:3", "1:1", "9:16", or "Free").
+    pub screenrec_aspect_ratio: String,
+    /// Whether to record audio alongside screen recording.
+    pub screenrec_audio: bool,
 }
 
 impl Default for Settings {
@@ -165,6 +169,8 @@ impl Default for Settings {
             private_wifi: false,
             hide_notification_details: false,
             avatar: None,
+            screenrec_aspect_ratio: "Free".into(),
+            screenrec_audio: false,
         }
     }
 }
@@ -184,6 +190,8 @@ impl Settings {
             "private_wifi": self.private_wifi,
             "hide_notification_details": self.hide_notification_details,
             "avatar": self.avatar.as_ref().map(|p| p.to_string_lossy().into_owned()),
+            "screenrec_aspect_ratio": self.screenrec_aspect_ratio,
+            "screenrec_audio": self.screenrec_audio,
         })
     }
 
@@ -228,6 +236,11 @@ impl Settings {
         }
         if let Some(b) = bool_of("hide_notification_details") {
             s.hide_notification_details = b;
+        if let Some(r) = str_of("screenrec_aspect_ratio") {
+            s.screenrec_aspect_ratio = r.to_string();
+        }
+        if let Some(a) = bool_of("screenrec_audio") {
+            s.screenrec_audio = a;
         }
         s
     }

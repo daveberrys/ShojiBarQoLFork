@@ -21,6 +21,7 @@ mod preview;
 mod qs_pages;
 mod qs_settings;
 mod quick_settings;
+mod screenrec;
 mod settings;
 mod shell_layer;
 mod theme;
