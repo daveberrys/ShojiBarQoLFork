@@ -651,7 +651,6 @@ fn tiles() -> Div {
 /// The volume and the brightness.
 fn sliders() -> Div {
     let a = audio();
-    let s = session();
     let style = slider_style;
     let row = |icon: Div, slider: Div| {
         div()
@@ -672,8 +671,8 @@ fn sliders() -> Div {
         },
     );
     let brightness = Binding::new(
-        move || s.brightness().unwrap_or(0.0) as f32,
-        move |v| drop(s.set_brightness(v.max(0.02) as f64)),
+        move || crate::brightness::level().unwrap_or(0.0) as f32,
+        move |v| crate::brightness::set(v as f64),
     );
     section()
         .py(8.0_f32)
@@ -712,7 +711,7 @@ fn sliders() -> Div {
             ),
         )
         .child(show(
-            move || s.brightness().is_some(),
+            move || crate::brightness::level().is_some(),
             move || {
                 row(
                     div()

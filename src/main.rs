@@ -3,6 +3,7 @@
 mod appinfo;
 mod bar;
 mod battery_card;
+mod brightness;
 mod calendar;
 mod clipboard;
 mod dock;
@@ -54,6 +55,7 @@ fn main() {
             theme::install();
             wm::share_theme();
             shell_layer::open_popups(shell_layer::Wayland);
+            brightness::install();
             osd::install();
             lock::install();
             for_each_output(|output| {

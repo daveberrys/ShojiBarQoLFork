@@ -493,7 +493,7 @@ pub fn focused_island(active: Memo<Option<Focused>>, at: BarPlacement) -> Show {
                         )),
                 )
                 .child(edge_fade())
-        },
+        }
     )
     .enter(|s| s.opacity(0.0_f32).scale(0.8_f32))
     .exit(|s| s.opacity(0.0_f32).scale(0.8_f32))

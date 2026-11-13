@@ -19,12 +19,11 @@ enum Shown {
 /// Follows the volume and the brightness. Call once, from the root.
 pub fn install() {
     let a = audio();
-    let s = session();
     let volume = memo(move || {
         a.default_sink()
             .map(|d| ((d.volume * 100.0).round() as i32, d.muted, d.id))
     });
-    let brightness = memo(move || s.brightness().map(|b| (b * 100.0).round() as i32));
+    let brightness = memo(move || crate::brightness::level().map(|b| (b * 100.0).round() as i32));
     let shown = signal(None::<Shown>);
     let hide: Cell<Option<Timeout>> = Cell::new(None);
     let show_for = move |what: Shown| {

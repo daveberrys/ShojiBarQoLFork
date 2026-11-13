@@ -24,7 +24,7 @@ The icon under the pointer lifts a little and shows its name.
 ## Quick settings
 
 - **Tiles**: round off and change color when on.
-- **Sliders** for volume and brightness.
+- **Sliders** for volume and brightness: the brightness goes to every monitor `ddcutil` finds, over DDC/CI, once the slider rests for a second.
 - **Power menu**: Lock, Sleep, Log out, Restart, Shut down.
   - Log out (`shoji_wm --quit`), Restart and Shut down ask first, in a dialog in the middle of the screen over a blurred veil like the launcher's.
   - The dialog's icon shape spins in, and turns into a sun while the pointer is on the action button.
