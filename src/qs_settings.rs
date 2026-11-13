@@ -170,7 +170,7 @@ fn screenrec_section() -> Div {
                 )),
         )
         .child(row(
-            "Record audio",
+            "Record microphone audio",
             Binding::new(
                 || settings().with(|s| s.screenrec_audio),
                 |on| settings().update(|s| s.screenrec_audio = on),

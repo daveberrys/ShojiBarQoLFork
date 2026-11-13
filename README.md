@@ -1,3 +1,6 @@
+> [!WARNING]
+> Everything here is vibecoded, and that should be already obvious because Shoji bar is vibecoded. No I am not coding this by hand. Yes I do test them and they do work.
+
 > [!NOTE]
 > This is just a QOL fork of Shoji bar 4 because I really like Material Design 3 Expressive and I want the features I like from Noctalia to Shoji bar.
 
