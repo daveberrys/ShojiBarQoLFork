@@ -161,7 +161,17 @@ fn cell(
     launch: impl Fn(&str) + Copy + 'static,
 ) -> Div {
     let app = apps().get(&id);
-    let name = app.as_ref().map(|a| a.name.clone()).unwrap_or_default();
+    let name = app
+        .as_ref()
+        .map(|a| {
+            let truncated = a.name.chars().take(12).collect::<String>();
+            if a.name.chars().count() > 12 {
+                format!("{truncated}...")
+            } else {
+                truncated
+            }
+        })
+        .unwrap_or_default();
     let icon = app.as_ref().and_then(|a| app_icon(a, 128));
     let chosen = memo(move || index.get() == Some(picked.get()));
     let hovered = signal(false);
@@ -207,7 +217,7 @@ fn cell(
                 .dyn_style(move |s| {
                     let c = colors();
                     let t = shown.get();
-                    s.rounded(18.0 + 28.0 * round.get())
+                    s.rounded(18.0 + 8.0 * round.get())
                         .bg(if chosen.get() {
                             c.secondary_container
                         } else {
@@ -230,6 +240,7 @@ fn cell(
                         .child(match icon {
                             Some(path) => img(path)
                                 .size(46.0)
+                                .rounded(8.0_f32)
                                 .object_fit(ObjectFit::Contain)
                                 .into_view(),
                             None => TextStyle::TITLE_LARGE
