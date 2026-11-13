@@ -3,6 +3,7 @@
 
 use crate::appinfo::icon_file;
 use crate::quick_settings::{Page, go, section, slider_style};
+use crate::settings::settings;
 use crate::theme::{TextStyle, colors};
 use crate::ui::*;
 use anti_webui::prelude::*;
@@ -333,7 +334,17 @@ pub fn wifi_page() -> Div {
             move || {
                 section().child(subheading("Connected")).child(item(
                     move || net.wifi().map_or(icons::WIFI, |a| wifi_symbol(&a)),
-                    move || net.wifi().map(|a| a.ssid).unwrap_or_default(),
+                    move || {
+                        net.wifi()
+                            .map(|a| {
+                                if settings().with(|s| s.private_wifi) {
+                                    "Hidden network".into()
+                                } else {
+                                    a.ssid
+                                }
+                            })
+                            .unwrap_or_default()
+                    },
                     move || {
                         let reach = match net.connectivity() {
                             Connectivity::Full => "Connected",

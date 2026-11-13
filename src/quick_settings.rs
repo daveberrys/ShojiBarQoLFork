@@ -508,6 +508,7 @@ fn tiles() -> Div {
                     },
                     "Internet",
                     move || match net.wifi() {
+                        Some(_) if settings().with(|s| s.private_wifi) => "Hidden network".into(),
                         Some(ap) => ap.ssid,
                         None if net.wired().is_some_and(|w| w.connected) => "Ethernet".into(),
                         None if net.wifi_enabled() => "Not connected".into(),

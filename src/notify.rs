@@ -2,6 +2,7 @@
 //! cards that slide in, and stay in a list in quick settings until they are cleared.
 
 use crate::appinfo::{app_by_id, app_icon, icon_file};
+use crate::settings::settings;
 use crate::theme::{TextStyle, colors, elevation};
 use crate::ui::*;
 use anti_webui::prelude::*;
@@ -62,8 +63,10 @@ pub fn popups(server: NotificationServer, region: Signal<InputRegion>) -> Div {
         )
 }
 
-/// The icon of a notification: its picture, its app's icon, or a bell.
+/// The icon of a notification: its picture, its app's icon, or a bell. When notification details
+/// are hidden, only the app's icon is used, never a picture the notification brought.
 fn icon_of(n: &Notification) -> Div {
+    let private = settings().with(|s| s.hide_notification_details);
     // `image-path` may be a file, a `file://` URL, or the name of an icon.
     let named = |name: &str| -> Option<std::path::PathBuf> {
         let name = name.strip_prefix("file://").unwrap_or(name);
@@ -75,19 +78,36 @@ fn icon_of(n: &Notification) -> Div {
             icon_file(name, 64)
         }
     };
-    let file = n
-        .image_path
+    let app_picture = n
+        .desktop_entry
         .as_deref()
-        .and_then(named)
-        .or_else(|| named(&n.app_icon))
+        .and_then(app_by_id)
+        .and_then(|a| app_icon(&a, 64))
         .or_else(|| {
-            n.desktop_entry
-                .as_deref()
-                .and_then(app_by_id)
-                .and_then(|a| app_icon(&a, 64))
+            let name = n.app_icon.strip_prefix("file://").unwrap_or(&n.app_icon);
+            // A path here could be a picture the notification brought, not the app's icon.
+            (!name.is_empty() && !name.starts_with('/'))
+                .then(|| icon_file(name, 64))
+                .flatten()
         });
+    let file = if private {
+        app_picture
+    } else {
+        n.image_path
+            .as_deref()
+            .and_then(named)
+            .or_else(|| named(&n.app_icon))
+            .or_else(|| {
+                n.desktop_entry
+                    .as_deref()
+                    .and_then(app_by_id)
+                    .and_then(|a| app_icon(&a, 64))
+            })
+    };
     let frame = div().size(36.0).flex_none().rounded(12.0_f32).overflow_hidden();
-    if let Some(picture) = n.image.clone() {
+    if !private
+        && let Some(picture) = n.image.clone()
+    {
         frame.child(
             bitmap_view(move || Some(picture.clone()))
                 .size_full()
@@ -107,21 +127,16 @@ fn icon_of(n: &Notification) -> Div {
     }
 }
 
-/// A notification as a card: its icon, who sent it, what it says, its actions and a close button.
-pub fn card(n: Notification, popup: bool) -> Div {
-    let urgent = n.urgency == Urgency::Critical;
-    let when = n.received();
-    let app = n.app_name.clone();
-    let gone = n.clone();
-    let default = n.clone();
-    let has_default = n.actions.iter().any(|(k, _)| k == "default");
+/// The actions of a notification as buttons, without its default one, which a click on the card
+/// does.
+fn actions_of(n: &Notification) -> Option<Div> {
     let mut actions = div().flex().flex_row().gap(8.0_f32).pt(4.0_f32);
-    let mut any_action = false;
+    let mut any = false;
     for (key, label) in n.actions.clone() {
         if key == "default" {
             continue;
         }
-        any_action = true;
+        any = true;
         let n = n.clone();
         actions = actions.child(
             styled_button(label, ButtonStyle::tonal().size(ButtonSize::ExtraSmall)).on_click(
@@ -131,6 +146,19 @@ pub fn card(n: Notification, popup: bool) -> Div {
             ),
         );
     }
+    any.then_some(actions)
+}
+
+/// A notification as a card: its icon, who sent it, what it says, its actions and a close button.
+pub fn card(n: Notification, popup: bool) -> Div {
+    let urgent = n.urgency == Urgency::Critical;
+    let when = n.received();
+    let app = n.app_name.clone();
+    let gone = n.clone();
+    let default = n.clone();
+    let has_default = n.actions.iter().any(|(k, _)| k == "default");
+    // With details hidden, the card is only the app's picture and its name.
+    let show_details = move || !settings().with(|s| s.hide_notification_details);
     let hovered = signal(false);
     let mut body = div()
         .w(WIDTH)
@@ -172,6 +200,13 @@ pub fn card(n: Notification, popup: bool) -> Div {
                         .gap(2.0_f32)
                         .child(
                             txt(TextStyle::LABEL_SMALL, move || {
+                                if !show_details() {
+                                    return if app.is_empty() {
+                                        "Notification".to_owned()
+                                    } else {
+                                        app.clone()
+                                    };
+                                }
                                 let ago = when.elapsed().as_secs();
                                 let ago = match ago {
                                     0..60 => "now".to_owned(),
@@ -187,17 +222,24 @@ pub fn card(n: Notification, popup: bool) -> Div {
                             })
                             .dyn_style(move |s| s.opacity(0.75_f32)),
                         )
-                        .child(
-                            static_txt(TextStyle::TITLE_SMALL, n.summary.clone()).overflow_hidden(),
-                        )
-                        .child(
-                            TextStyle::BODY_SMALL
-                                .apply(div())
-                                .max_h(48.0)
-                                .overflow_hidden()
-                                .dyn_style(move |s| s.opacity(0.85_f32))
-                                .child(n.body_text()),
-                        ),
+                        .child(show(show_details, {
+                            let summary = n.summary.clone();
+                            move || {
+                                static_txt(TextStyle::TITLE_SMALL, summary.clone())
+                                    .overflow_hidden()
+                            }
+                        }))
+                        .child(show(show_details, {
+                            let n = n.clone();
+                            move || {
+                                TextStyle::BODY_SMALL
+                                    .apply(div())
+                                    .max_h(48.0)
+                                    .overflow_hidden()
+                                    .dyn_style(move |s| s.opacity(0.85_f32))
+                                    .child(n.body_text())
+                            }
+                        })),
                 )
                 .child(
                     icon_btn(icons::CLOSE, 28.0, |c| c.on_surface_variant)
@@ -211,8 +253,11 @@ pub fn card(n: Notification, popup: bool) -> Div {
                         .transition_of([Prop::Opacity], Transition::ms(150).ease_out()),
                 ),
         );
-    if any_action {
-        body = body.child(actions);
+    if n.actions.iter().any(|(k, _)| k != "default") {
+        let n = n.clone();
+        body = body.child(show(show_details, move || {
+            actions_of(&n).unwrap_or_else(div)
+        }));
     }
     pressable(body, |c| c.on_surface)
 }

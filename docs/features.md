@@ -39,6 +39,7 @@ The icon under the pointer lifts a little and shows its name.
   - **User picture**: a copy of the one you pick is kept in `$XDG_STATE_HOME/shoji-bar-4/`. Without one, `~/.face.icon`, `~/.face` or AccountsService's picture is used. Picking one needs zenity.
   - **Style and color**: wallpaper, seed color, scheme variant, and light, auto or dark.
   - **Clock**: 24-hour time and seconds.
+  - **Privacy**: private Wi-Fi hides the name of the network you are on; hiding notification details leaves only each app's icon and name.
 
 ## Calendar
 

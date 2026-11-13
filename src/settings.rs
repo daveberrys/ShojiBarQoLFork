@@ -133,6 +133,10 @@ pub struct Settings {
     pub bar_position: BarPosition,
     pub clock_24h: bool,
     pub clock_seconds: bool,
+    /// Hides the name of the Wi-Fi network the shell is on.
+    pub private_wifi: bool,
+    /// Shows only the app's icon and name for notifications, not what they say.
+    pub hide_notification_details: bool,
     /// The user's picture, a copy kept next to this file; `None` for the desktop's.
     pub avatar: Option<PathBuf>,
 }
@@ -158,6 +162,8 @@ impl Default for Settings {
             bar_position: BarPosition::Top,
             clock_24h: true,
             clock_seconds: false,
+            private_wifi: false,
+            hide_notification_details: false,
             avatar: None,
         }
     }
@@ -175,6 +181,8 @@ impl Settings {
             "bar_position": self.bar_position.name(),
             "clock_24h": self.clock_24h,
             "clock_seconds": self.clock_seconds,
+            "private_wifi": self.private_wifi,
+            "hide_notification_details": self.hide_notification_details,
             "avatar": self.avatar.as_ref().map(|p| p.to_string_lossy().into_owned()),
         })
     }
@@ -214,6 +222,12 @@ impl Settings {
         }
         if let Some(b) = bool_of("clock_seconds") {
             s.clock_seconds = b;
+        }
+        if let Some(b) = bool_of("private_wifi") {
+            s.private_wifi = b;
+        }
+        if let Some(b) = bool_of("hide_notification_details") {
+            s.hide_notification_details = b;
         }
         s
     }

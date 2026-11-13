@@ -24,6 +24,7 @@ pub fn settings_page() -> Div {
         .child(settle_in(2, style_section()))
         .child(settle_in(3, bar_section()))
         .child(settle_in(4, clock_section()))
+        .child(settle_in(5, privacy_section()))
 }
 
 /// The heading of a section: an icon and its name.
@@ -151,6 +152,49 @@ fn clock_section() -> Div {
             Binding::new(
                 || settings().with(|s| s.clock_seconds),
                 |on| settings().update(|s| s.clock_seconds = on),
+            ),
+        ))
+}
+
+/// Ways to keep what the shell shows to yourself.
+fn privacy_section() -> Div {
+    let row = |label: &'static str, about: &'static str, on: Binding<bool>| {
+        div()
+            .flex()
+            .flex_row()
+            .items_center()
+            .gap(12.0_f32)
+            .px(4.0_f32)
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .flex_1()
+                    .min_w(0.0)
+                    .child(static_txt(TextStyle::BODY_MEDIUM, label))
+                    .child(
+                        static_txt(TextStyle::BODY_SMALL, about)
+                            .dyn_style(|s| s.text_color(colors().on_surface_variant)),
+                    ),
+            )
+            .child(switch(on))
+    };
+    section()
+        .child(heading(icons::PRIVACY, "Privacy"))
+        .child(row(
+            "Private Wi-Fi",
+            "Hide the name of the network you are on",
+            Binding::new(
+                || settings().with(|s| s.private_wifi),
+                |on| settings().update(|s| s.private_wifi = on),
+            ),
+        ))
+        .child(row(
+            "Hide notification details",
+            "Show only the app's icon and name",
+            Binding::new(
+                || settings().with(|s| s.hide_notification_details),
+                |on| settings().update(|s| s.hide_notification_details = on),
             ),
         ))
 }

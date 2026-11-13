@@ -66,5 +66,7 @@ Settings are kept in `$XDG_STATE_HOME/shoji-bar-4/settings.json` (usually `~/.lo
 | `pinned` | Desktop IDs of the apps pinned to the dock |
 | `bar_position` | `top` / `left` / `right`; changing it in Settings moves the bar immediately |
 | `clock_24h` / `clock_seconds` | How the clock is shown |
+| `private_wifi` | Hide the name of the Wi-Fi network in quick settings |
+| `hide_notification_details` | Show only each notification's app icon and name |
 
 Wallpapers to choose from are read from `~/Pictures/wallpapers`.
