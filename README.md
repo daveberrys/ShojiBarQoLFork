@@ -1,3 +1,6 @@
+> [!NOTE]
+> This is just a QOL fork of Shoji bar 4 because I really like Material Design 3 Expressive and I want the features I like from Noctalia to Shoji bar.
+
 # shoji-bar-4
 
 A Material 3 Expressive desktop shell for [ShojiWM](https://github.com/bea4dev/ShojiWM), written in Rust on [AntiWebUI](https://github.com/bea4dev/AntiWebUI).
