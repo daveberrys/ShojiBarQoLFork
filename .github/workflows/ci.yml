@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/**'
       - 'Cargo.toml'
+      - '.github/workflows/*.yml'
   workflow_dispatch:
 
 jobs:
