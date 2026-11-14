@@ -20,6 +20,7 @@ This fork introduces quality-of-life features, Noctalia-inspired additions, and 
 - **Privacy features**: Hidden Wi-FI, and hidden notifications.
 - **External monitor brightness**: Brightness control via `ddcutil`.
 - **QoL improvements**: Various personal fixes and polish throughout the shell.
+- **KDE Connect**: Show your phone's battery and send files from it.
 
 ## Getting started
 
