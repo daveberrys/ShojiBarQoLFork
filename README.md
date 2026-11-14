@@ -2,11 +2,11 @@
 > Everything here is vibecoded, and that should be already obvious because Shoji bar is vibecoded. No I am not coding this by hand. Yes I do test them and they do work.
 
 > [!NOTE]
-> This is a fork of Shoji bar 4. Support the original curator—I highly suggest checking out the original Shoji bar 4 repository linked here: [https://github.com/bea4dev/shoji-bar-4](https://github.com/bea4dev/shoji-bar-4).
+> This is a fork of Shoji bar 4. Support the original curator - I highly suggest checking out the original Shoji bar 4 repository linked here: [https://github.com/bea4dev/shoji-bar-4](https://github.com/bea4dev/shoji-bar-4).
 >
 > This is a QOL fork of Shoji bar 4 because I really like Material Design 3 Expressive and wanted to bring the features I like from Noctalia over to Shoji bar.
 
-# shoji-bar-4 (QoL Fork)
+# shoji-bar-4 (dvs' QoL fork.)
 
 A for of the original [shoji-bar-4](https://github.com/bea4dev/shoji-bar-4) baked with QoL features such as listed below.
 
@@ -23,6 +23,7 @@ This fork introduces quality-of-life features, Noctalia-inspired additions, and 
 
 ## Getting started
 
+### Compiling
 You will need any desktop environment that supports Shoji, such as Niri, Hyprland, Shoji, or Umbriel, a Rust toolchain, and also the prerequisites: NetworkManager, BlueZ, PipeWire, UPower, power-profiles-daemon, and logind. `cliphist` and `wl-clipboard` give the clipboard history, `zenity` lets you pick a user picture, `ddcutil` sets the brightness of every monitor, and `wf-recorder` or `wl-screenrec` handles screen recording.
 
 ```sh
@@ -30,6 +31,9 @@ git clone https://github.com/daveberrys/shoji-bar-4 ~/.config/shoji-bar-4
 cd ~/.config/shoji-bar-4
 cargo build --release
 ```
+
+## Getting nightly.link
+TBA
 
 ## Documentation
 

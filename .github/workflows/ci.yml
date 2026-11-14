@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Compile
+        run: cargo build --release
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: shoji-bar-4-dvs-fork
+          path: |
+            target/release/shoji-bar-4
+          if-no-files-found: warn
