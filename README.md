@@ -23,9 +23,21 @@ This fork introduces quality-of-life features, Noctalia-inspired additions, and 
 
 ## Getting started
 
-### Compiling
 You will need any desktop environment that supports Shoji, such as Niri, Hyprland, Shoji, or Umbriel, a Rust toolchain, and also the prerequisites: NetworkManager, BlueZ, PipeWire, UPower, power-profiles-daemon, and logind. `cliphist` and `wl-clipboard` give the clipboard history, `zenity` lets you pick a user picture, `ddcutil` sets the brightness of every monitor, and `wf-recorder` or `wl-screenrec` handles screen recording.
 
+### Extra Dependencies
+```bash
+# Ubuntu
+sudo apt install pkg-config libfontconfig1-dev libwayland-dev libpam0g-dev libxcb1-dev libxkbcommon-dev libxkbcommon-x11-dev
+
+# Arch Linux
+sudo pacman -S pkgconf fontconfig wayland pam libxcb libxkbcommon libxkbcommon-x11
+
+# Fedora
+sudo dnf install pkgconf-pkg-config fontconfig-devel wayland-devel pam-devel libxcb-devel libxkbcommon-devel libxkbcommon-x11-devel
+```
+
+### Compiling
 ```sh
 git clone https://github.com/daveberrys/shoji-bar-4 ~/.config/shoji-bar-4
 cd ~/.config/shoji-bar-4

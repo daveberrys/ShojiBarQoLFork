@@ -20,7 +20,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y pkg-config libfontconfig1-dev libwayland-dev
+          sudo apt install pkg-config libfontconfig1-dev libwayland-dev libpam0g-dev libxcb1-dev libxkbcommon-dev libxkbcommon-x11-dev
 
       - name: Compile
         run: cargo build --release
