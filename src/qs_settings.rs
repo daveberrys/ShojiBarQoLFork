@@ -26,7 +26,6 @@ pub fn settings_page() -> Div {
         .child(settle_in(3, bar_section()))
         .child(settle_in(4, clock_section()))
         .child(settle_in(5, privacy_section()))
-        .child(settle_in(6, screenrec_section()))
 }
 
 /// The heading of a section: an icon and its name.
@@ -126,55 +125,6 @@ fn bar_section() -> Div {
             ButtonStyle::tonal(),
             move |i| settings().with(|s| s.bar_position == positions[i]),
             move |i| settings().update(|s| s.bar_position = positions[i]),
-        ))
-}
-
-/// How the clock in the bar reads.
-/// Screen recording settings: aspect ratio for slurp and optional audio.
-fn screenrec_section() -> Div {
-    let ratios = ["Free", "16:9", "4:3", "1:1", "9:16"];
-    let row = |label: &'static str, on: Binding<bool>| {
-        div()
-            .flex()
-            .flex_row()
-            .items_center()
-            .px(4.0_f32)
-            .child(static_txt(TextStyle::BODY_MEDIUM, label).flex_1())
-            .child(switch(on))
-    };
-    section()
-        .child(heading(icons::SCREEN_RECORD, "Screen recording"))
-        .child(
-            div()
-                .flex()
-                .flex_col()
-                .gap(6.0_f32)
-                .child(static_txt(TextStyle::BODY_MEDIUM, "Aspect ratio").px(4.0_f32))
-                .child(connected_button_group(
-                    ratios,
-                    ButtonStyle::tonal(),
-                    move |i| {
-                        settings().with(|s| {
-                            s.screenrec_aspect_ratio.eq_ignore_ascii_case(ratios[i])
-                                || (ratios[i] == "Free" && s.screenrec_aspect_ratio.is_empty())
-                        })
-                    },
-                    move |i| {
-                        let chosen = if ratios[i] == "Free" {
-                            "Free".to_string()
-                        } else {
-                            ratios[i].to_string()
-                        };
-                        settings().update(|s| s.screenrec_aspect_ratio = chosen);
-                    },
-                )),
-        )
-        .child(row(
-            "Record microphone audio",
-            Binding::new(
-                || settings().with(|s| s.screenrec_audio),
-                |on| settings().update(|s| s.screenrec_audio = on),
-            ),
         ))
 }
 

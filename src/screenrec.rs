@@ -1,11 +1,8 @@
 //! Screen recording using slurp and wf-recorder / wf-screenrec.
 
 use crate::settings::settings;
-use crate::ui::*;
 use anti_webui::prelude::*;
 use anti_webui::shell::prelude::*;
-use anti_webui_md3e::ColorScheme;
-use anti_webui_md3e::icons;
 use std::cell::Cell;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
@@ -248,48 +245,6 @@ fn start_recording() {
                     .spawn();
             }
         });
-}
-
-/// The button in quick settings to record or stop recording.
-pub fn screenrec_button() -> Div {
-    let recording = is_recording();
-    pressable(
-        div()
-            .size(34.0_f32)
-            .flex()
-            .items_center()
-            .justify_center()
-            .flex_none()
-            .rounded(17.0_f32)
-            .child(dyn_sym(
-                move || {
-                    if recording.get() {
-                        icons::STOP_CIRCLE
-                    } else {
-                        icons::SCREEN_RECORD
-                    }
-                },
-                19.0_f32,
-                move |c: &ColorScheme| {
-                    if recording.get() {
-                        c.error
-                    } else {
-                        c.on_surface_variant
-                    }
-                },
-            )),
-        move |c: &ColorScheme| {
-            if recording.get() {
-                c.error
-            } else {
-                c.on_surface_variant
-            }
-        },
-    )
-    .cursor(CursorIcon::Pointer)
-    .on_click(|_| {
-        toggle_recording();
-    })
 }
 
 #[cfg(test)]

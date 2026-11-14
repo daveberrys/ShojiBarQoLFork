@@ -10,6 +10,7 @@ Floating islands along the top, left or right. **Settings → Bar position** mov
 - **Clock**: the digits roll as they change, and hovering changes Roboto Flex's weight. A vertical bar stacks hours, minutes and optional seconds, with AM/PM for 12-hour time; the date stays on the top bar.
 - **Now playing** (a dancing equalizer): a click opens the player under the top bar or beside a vertical bar, a middle click pauses or plays. The vertical island omits the title.
 - **Tray**, network, Bluetooth, volume and battery. Tray menus open beside a vertical bar. Tray icons are resolved from absolute files, application-provided icon directories or the desktop icon theme, with supplied pixmaps and title initials as fallbacks.
+- **Right-click menu**: right-click the system-controls island to open a separate utility menu just below it. Screen recording toggles on or off (shown as selected while active); Hyprpicker lets you pick a color and copies its output with `wl-copy` after a one-second delay (requires `hyprpicker` and `wl-copy`).
 
 ## Dock
 

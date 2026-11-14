@@ -16,11 +16,13 @@ A fork of the original [shoji-bar-4](https://github.com/bea4dev/shoji-bar-4) bak
 
 This fork introduces quality-of-life features, Noctalia-inspired additions, and fixes for various gripes that were not in the original Shoji bar:
 
-- **Screen recording**: Built-in support for `wf-recorder` and `wl-screenrec`.
+- **Extra toolbar**: Built-in support for `wf-recorder` and `wl-screenrec`, and `hyprpicker` for picking color.
 - **Privacy features**: Hidden Wi-FI, and hidden notifications.
 - **External monitor brightness**: Brightness control via `ddcutil`.
 - **QoL improvements**: Various personal fixes and polish throughout the shell.
 - **KDE Connect**: Show your phone's battery and send files from it.
+
+*For more feature implementation, please check ![feautes.md](./docs/features.md)*
 
 ## Getting started
 
