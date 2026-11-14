@@ -8,9 +8,9 @@
 
 # shoji-bar-4 (dvs' QoL fork.)
 
-A for of the original [shoji-bar-4](https://github.com/bea4dev/shoji-bar-4) baked with QoL features such as listed below.
+A fork of the original [shoji-bar-4](https://github.com/bea4dev/shoji-bar-4) baked with QoL features such as listed below.
 
-<video src="https://video.twimg.com/amplify_video/2121363704730300416/vid/avc1/452x1080/2XXYKYI1R5yCdZan.mp4" alt="preview" />
+[Video preview](https://x.com/TheDevDoggo/status/2121363757893063070)
 
 ## What this fork adds
 
