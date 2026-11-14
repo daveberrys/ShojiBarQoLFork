@@ -2,31 +2,34 @@
 > Everything here is vibecoded, and that should be already obvious because Shoji bar is vibecoded. No I am not coding this by hand. Yes I do test them and they do work.
 
 > [!NOTE]
-> This is just a QOL fork of Shoji bar 4 because I really like Material Design 3 Expressive and I want the features I like from Noctalia to Shoji bar.
+> This is a fork of Shoji bar 4. Support the original curator—I highly suggest checking out the original Shoji bar 4 repository linked here: [https://github.com/bea4dev/shoji-bar-4](https://github.com/bea4dev/shoji-bar-4).
+>
+> This is a QOL fork of Shoji bar 4 because I really like Material Design 3 Expressive and wanted to bring the features I like from Noctalia over to Shoji bar.
 
-# shoji-bar-4
+# shoji-bar-4 (QoL Fork)
 
-A Material 3 Expressive desktop shell for [ShojiWM](https://github.com/bea4dev/ShojiWM), written in Rust on [AntiWebUI](https://github.com/bea4dev/AntiWebUI).
+A for of the original [shoji-bar-4](https://github.com/bea4dev/shoji-bar-4) baked with QoL features such as listed below.
 
-![shoji-bar-4 on ShojiWM](./ss.png)
+<video src="https://video.twimg.com/amplify_video/2121363704730300416/vid/avc1/452x1080/2XXYKYI1R5yCdZan.mp4" alt="preview" />
 
-- **Top or vertical side bar** of floating islands: launcher, workspaces, the active window, a rolling clock, now playing, tray and status icons.
-- **Dock** that hides at the bottom edge and rises when the pointer reaches it.
-- **Quick settings**, **calendar**, **launcher**, **clipboard history**, **media player**, **notifications**, **OSD** and a **lock screen**.
-- **Dynamic color** from a seed or the wallpaper, moved to on a spring everywhere at once, window frames included.
-- Springs and shape morphs throughout, and no frames drawn while nothing moves (0% CPU when idle).
+## What this fork adds
+
+This fork introduces quality-of-life features, Noctalia-inspired additions, and fixes for various gripes that were not in the original Shoji bar:
+
+- **Screen recording**: Built-in support for `wf-recorder` and `wl-screenrec`.
+- **Privacy features**: Hidden Wi-FI, and hidden notifications.
+- **External monitor brightness**: Brightness control via `ddcutil`.
+- **QoL improvements**: Various personal fixes and polish throughout the shell.
 
 ## Getting started
 
-You need ShojiWM, a Rust toolchain, and the usual desktop services: NetworkManager, BlueZ, PipeWire, UPower, power-profiles-daemon and logind. `cliphist` and `wl-clipboard` give the clipboard history, `zenity` lets you pick a user picture, and `ddcutil` sets the brightness of every monitor.
+You will need any desktop environment that supports Shoji, such as Niri, Hyprland, Shoji, or Umbriel, a Rust toolchain, and also the prerequisites: NetworkManager, BlueZ, PipeWire, UPower, power-profiles-daemon, and logind. `cliphist` and `wl-clipboard` give the clipboard history, `zenity` lets you pick a user picture, `ddcutil` sets the brightness of every monitor, and `wf-recorder` or `wl-screenrec` handles screen recording.
 
 ```sh
-git clone https://github.com/bea4dev/shoji-bar-4 ~/.config/shoji-bar-4
+git clone https://github.com/daveberrys/shoji-bar-4 ~/.config/shoji-bar-4
 cd ~/.config/shoji-bar-4
 cargo build --release
 ```
-
-ShojiWM's default config starts `~/.config/shoji-bar-4/target/release/shoji-bar-4` with the session, binds its keys (`Super` for the launcher, `Super+N` quick settings, `Super+C` calendar, `Super+V` clipboard, `Super+L` lock) and draws the window frames in the shell's colors. With another config, see [Using it with ShojiWM](docs/usage.md#using-it-with-shojiwm).
 
 ## Documentation
 
