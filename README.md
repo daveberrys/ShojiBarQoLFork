@@ -45,7 +45,7 @@ cargo build --release
 ```
 
 ## Getting nightly.link
-TBA
+https://nightly.link/daveberrys/shoji-bar-4/workflows/ci/main/shoji-bar-4-dvs-fork.zip
 
 ## Documentation
 
