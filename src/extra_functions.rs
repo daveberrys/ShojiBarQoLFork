@@ -22,7 +22,7 @@ pub fn page() -> Div {
         ))
         .child(settle_in(
             1,
-            static_txt(TextStyle::BODY_MEDIUM, "Tools for the extra top bar - Hint, right click on the control island to immediately open this!")
+            static_txt(TextStyle::BODY_MEDIUM, "Tools for the extra top bar - Hint, right click on the\ncontrol island to immediately open this!")
                 .px(8.0_f32)
                 .dyn_style(|s| s.text_color(colors().on_surface_variant)),
         ))
