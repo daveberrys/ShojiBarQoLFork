@@ -1,7 +1,6 @@
 //! Quick settings: who is here and the power buttons, toggles as tiles, the volume and the
-//! brightness, the battery, what is playing, and the notifications. Some tiles lead to a page of
-//! their own (`qs_pages`), which takes the place of all this in the panel; the gear leads to the
-//! settings of the shell (`qs_settings`).
+//! brightness, the battery, what is playing, and the notifications. Some tiles and the bar's
+//! right-click action lead to pages of their own; the gear leads to shell settings.
 
 use crate::bar::wifi_icon;
 use crate::power_dialog::Ask;
@@ -26,6 +25,7 @@ pub enum Page {
     Bluetooth,
     Sound,
     Settings,
+    ExtraFunctions,
 }
 
 thread_local! {
@@ -37,9 +37,22 @@ thread_local! {
 
 /// Opens the panel at a page, on the output where the window with the keyboard is.
 pub fn open_at(page: Page) {
-    START.with(|s| s.set(page));
+    set_start_page(page);
     if let Some(output) = crate::ipc::focused_output() {
         crate::panels::open(&output, crate::panels::Panel::QuickSettings);
+    }
+}
+
+/// Opens the panel at a page on the output the action came from.
+pub fn open_at_output(page: Page, output: &Output) {
+    set_start_page(page);
+    crate::panels::open(&output.name, crate::panels::Panel::QuickSettings);
+}
+
+fn set_start_page(page: Page) {
+    START.with(|s| s.set(page));
+    if let Some(current) = page_signal() {
+        current.set(page);
     }
 }
 
@@ -145,6 +158,11 @@ pub fn panel(output: Output) -> Div {
                 .child(page_view(
                     Page::Settings,
                     crate::qs_settings::settings_page,
+                    56.0,
+                ))
+                .child(page_view(
+                    Page::ExtraFunctions,
+                    crate::extra_functions::page,
                     56.0,
                 )),
         )

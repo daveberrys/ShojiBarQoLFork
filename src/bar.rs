@@ -16,8 +16,6 @@ use anti_webui_md3e::components::{MenuItem, MenuStyle, menu_item, styled_menu};
 use anti_webui_md3e::icons;
 use anti_webui_md3e::motion::{fast_spatial, slow_spatial};
 use std::cell::{Cell, RefCell};
-use std::io::Write;
-use std::process::{Command, Stdio};
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -91,63 +89,6 @@ pub fn view(output: Output, at: BarPlacement) -> Div {
                 .child(tray_island(at))
                 .child(status_island(output, at)),
         )
-}
-
-fn run_hyprpicker() {
-    crate::panels::close();
-    let result = std::thread::Builder::new()
-        .name("shoji-bar-4 hyprpicker".into())
-        .spawn(|| {
-            let result = (|| {
-                std::thread::sleep(Duration::from_secs(1));
-                let picked = Command::new("hyprpicker")
-                    .output()
-                    .map_err(|e| format!("Could not run hyprpicker: {e}"))?;
-                if !picked.status.success() {
-                    return Err("Hyprpicker did not return a color".to_string());
-                }
-                if picked.stdout.is_empty() {
-                    return Err("Hyprpicker returned no color".to_string());
-                }
-
-                let mut copier = Command::new("wl-copy")
-                    .stdin(Stdio::piped())
-                    .spawn()
-                    .map_err(|e| format!("Could not run wl-copy: {e}"))?;
-                let mut stdin = copier
-                    .stdin
-                    .take()
-                    .ok_or_else(|| "Could not open wl-copy input".to_string())?;
-                let copy_result = stdin
-                    .write_all(&picked.stdout)
-                    .map_err(|e| format!("Could not copy the selected color: {e}"));
-                drop(stdin);
-                let status = copier
-                    .wait()
-                    .map_err(|e| format!("Could not wait for wl-copy: {e}"))?;
-                copy_result?;
-                if !status.success() {
-                    return Err("wl-copy could not copy the selected color".to_string());
-                }
-                Ok(())
-            })();
-
-            if let Err(message) = result {
-                let _ = Command::new("notify-send")
-                    .args(["-a", "shoji-bar-4", "Hyprpicker failed", &message])
-                    .spawn();
-            }
-        });
-    if let Err(error) = result {
-        let _ = Command::new("notify-send")
-            .args([
-                "-a",
-                "shoji-bar-4",
-                "Hyprpicker failed",
-                &format!("Could not start picker: {error}"),
-            ])
-            .spawn();
-    }
 }
 
 const VERTICAL_ISLAND: f32 = 40.0;
@@ -1141,13 +1082,11 @@ fn status_island(output: Output, at: BarPlacement) -> Div {
     let bt = bluetooth();
     let a = audio();
     let b = battery();
-    let tools_open = signal(false);
-    let recording = crate::screenrec::is_recording();
-    let menu_anchor = node_ref();
     let open = memo({
         let output = output.clone();
         move || is_open(&output, Panel::QuickSettings)
     });
+    let extra_functions_output = output.clone();
     let color = move |c: &anti_webui_md3e::ColorScheme| c.on_surface_variant;
     let content = if vertical {
         bar_island(at).py(10.0_f32).gap(7.0_f32)
@@ -1225,49 +1164,14 @@ fn status_island(output: Output, at: BarPlacement) -> Div {
                 s
             }
         });
-    div()
-        .relative()
-        .on_pointer_down(move |e| {
-            if e.button == Some(PointerButton::Secondary) {
-                tools_open.set(true);
-            }
-        })
-        .child(pressable(content, |c| c.on_surface))
-        .child(
-            div()
-                .absolute()
-                .top(40.0)
-                .right(0.0)
-                .w(0.0)
-                .h(0.0)
-                .node_ref(menu_anchor),
-        )
-        .child(styled_menu(
-            move || tools_open.get(),
-            move || tools_open.set(false),
-            vec![vec![
-                menu_item("Screen recording")
-                    .icon(icons::SCREEN_RECORD)
-                    .selected_when(move || recording.get())
-                    .on_click(move || {
-                        tools_open.set(false);
-                        crate::screenrec::toggle_recording();
-                    }),
-                menu_item("Hyprpicker")
-                    .icon(icons::COLORIZE)
-                    .on_click(move || {
-                        tools_open.set(false);
-                        run_hyprpicker();
-                    }),
-            ]],
-            match at.side() {
-                PanelSide::Below => MenuStyle::new()
-                    .placement(Placement::BelowEnd)
-                    .anchor(menu_anchor),
-                PanelSide::Left => MenuStyle::new().placement(Placement::RightStart),
-                PanelSide::Right => MenuStyle::new().placement(Placement::LeftStart),
-            },
-        ))
+    pressable(content, |c| c.on_surface).on_pointer_down(move |e| {
+        if e.button == Some(PointerButton::Secondary) {
+            crate::quick_settings::open_at_output(
+                crate::quick_settings::Page::ExtraFunctions,
+                &extra_functions_output,
+            );
+        }
+    })
 }
 
 pub fn wifi_icon(strength: u8) -> &'static anti_webui_md3e::icons::Symbol {

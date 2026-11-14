@@ -148,7 +148,7 @@ fn place_panel(root: Style, panel: Panel, at: BarPlacement) -> Style {
     let clearance = at.clearance();
     match panel {
         Panel::QuickSettings => match at.side() {
-            PanelSide::Below => root.items_end().justify_start().pt(clearance).pr(14.0_f32),
+            PanelSide::Below => root.items_end().justify_start().pt(clearance).pr(8.0_f32),
             PanelSide::Left => root.items_start().justify_end().pl(clearance).pb(14.0_f32),
             PanelSide::Right => root.items_end().justify_end().pr(clearance).pb(14.0_f32),
         },

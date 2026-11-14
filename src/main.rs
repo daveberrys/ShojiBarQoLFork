@@ -7,6 +7,7 @@ mod brightness;
 mod calendar;
 mod clipboard;
 mod dock;
+mod extra_functions;
 mod ipc;
 mod launcher;
 mod lock;
