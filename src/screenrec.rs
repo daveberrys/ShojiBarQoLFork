@@ -17,6 +17,12 @@ thread_local! {
     static SENDER: Cell<Option<UiSender<RecordEvent>>> = const { Cell::new(None) };
 }
 
+/// Create recording state before any transient panel can own it.
+pub fn install() {
+    let _ = is_recording();
+    let _ = event_sender();
+}
+
 /// Whether a screen recording is currently taking place.
 /// Created in a root that lives outside any panel so it is never disposed.
 pub fn is_recording() -> Signal<bool> {

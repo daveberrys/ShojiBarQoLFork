@@ -257,6 +257,10 @@ fn header() -> Div {
                         ),
                 )
                 .child(
+                    icon_btn(icons::BUILD, 34.0, |c| c.on_surface_variant)
+                        .on_click(|_| go(Page::ExtraFunctions)),
+                )
+                .child(
                     icon_btn(icons::SETTINGS, 34.0, |c| c.on_surface_variant)
                         .on_click(|_| go(Page::Settings)),
                 )

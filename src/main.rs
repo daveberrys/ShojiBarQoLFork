@@ -54,6 +54,7 @@ fn main() {
         .app_id("shoji-bar-4")
         .run(|| {
             ipc::serve();
+            screenrec::install();
             theme::install();
             wm::share_theme();
             shell_layer::open_popups(shell_layer::Wayland);

@@ -5,7 +5,7 @@ use crate::theme::{TextStyle, colors};
 use crate::ui::*;
 use anti_webui::prelude::*;
 use anti_webui_md3e::components::sized_icon;
-use anti_webui_md3e::icons::{self, Symbol};
+use anti_webui_md3e::icons;
 use std::io::Write;
 use std::process::{Command, Stdio};
 use std::time::Duration;
@@ -22,37 +22,93 @@ pub fn page() -> Div {
         ))
         .child(settle_in(
             1,
-            static_txt(TextStyle::BODY_MEDIUM, "Tools for the extra top bar")
+            static_txt(TextStyle::BODY_MEDIUM, "Tools for the extra top bar - Hint, right click on the control island to immediately open this!")
                 .px(8.0_f32)
                 .dyn_style(|s| s.text_color(colors().on_surface_variant)),
         ))
         .child(settle_in(
             2,
-            section().child(extra_function(
-                icons::SCREEN_RECORD,
-                "Screen recording",
-                "Select an area to record. Reopen this page and select it again to stop.",
-                || {
-                    crate::panels::close();
-                    crate::screenrec::toggle_recording();
-                },
-            )),
+            section().child(screen_recording_action()),
         ))
         .child(settle_in(
             3,
             section().child(extra_function(
-                icons::COLORIZE,
+                icon_badge(
+                    sized_icon(icons::COLORIZE, 20.0),
+                    |c| c.secondary_container,
+                    |c| c.on_secondary_container,
+                ),
                 "Hyprpicker",
-                "After a one-second delay, pick a color; its output is copied to your clipboard.",
+                TextStyle::BODY_SMALL
+                    .apply(div().child("After a one-second delay, pick a color; its output is copied to your clipboard."))
+                    .dyn_style(|s| s.text_color(colors().on_surface_variant)),
                 run_hyprpicker,
             )),
         ))
 }
 
+fn screen_recording_action() -> Div {
+    let recording = crate::screenrec::is_recording();
+    let icon = icon_badge(
+        dyn_sym(
+            move || {
+                if recording.get() {
+                    icons::STOP_CIRCLE
+                } else {
+                    icons::SCREEN_RECORD
+                }
+            },
+            20.0,
+            move |c| {
+                if recording.get() {
+                    c.error
+                } else {
+                    c.on_secondary_container
+                }
+            },
+        ),
+        move |c| {
+            if recording.get() {
+                c.error_container
+            } else {
+                c.secondary_container
+            }
+        },
+        move |c| {
+            if recording.get() {
+                c.on_error_container
+            } else {
+                c.on_secondary_container
+            }
+        },
+    );
+    let description = TextStyle::BODY_SMALL
+        .apply(div().child(text(move || {
+            if recording.get() {
+                "Recording · click to stop".to_owned()
+            } else {
+                "Select an area to record".to_owned()
+            }
+        })))
+        .dyn_style(move |s| {
+            s.text_color(if recording.get() {
+                colors().error
+            } else {
+                colors().on_surface_variant
+            })
+        });
+    extra_function(
+        icon,
+        "Screen recording",
+        description,
+        crate::screenrec::toggle_recording,
+    )
+}
+
 fn extra_function(
-    icon: &'static Symbol,
+    icon: Div,
     name: &'static str,
-    description: &'static str,
+    description: Div,
     run: impl Fn() + 'static,
 ) -> Div {
     pressable(
@@ -73,11 +129,7 @@ fn extra_function(
                     .items_center()
                     .justify_center()
                     .flex_none()
-                    .dyn_style(|s| {
-                        s.bg(colors().secondary_container)
-                            .text_color(colors().on_secondary_container)
-                    })
-                    .child(sized_icon(icon, 20.0)),
+                    .child(icon),
             )
             .child(
                 div()
@@ -87,16 +139,31 @@ fn extra_function(
                     .min_w(0.0)
                     .gap(3.0_f32)
                     .child(static_txt(TextStyle::TITLE_SMALL, name))
-                    .child(
-                        TextStyle::BODY_SMALL
-                            .apply(div().child(description))
-                            .dyn_style(|s| s.text_color(colors().on_surface_variant)),
-                    ),
+                    .child(description),
             ),
         |c| c.on_surface,
     )
     .cursor(CursorIcon::Pointer)
     .on_click(move |_| run())
+}
+
+fn icon_badge(
+    icon: Div,
+    background: impl crate::ui::Role,
+    foreground: impl crate::ui::Role,
+) -> Div {
+    div()
+        .size(40.0)
+        .rounded(20.0_f32)
+        .flex()
+        .items_center()
+        .justify_center()
+        .flex_none()
+        .dyn_style(move |s| {
+            s.bg(background(&colors()))
+                .text_color(foreground(&colors()))
+        })
+        .child(icon)
 }
 
 fn run_hyprpicker() {

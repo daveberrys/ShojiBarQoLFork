@@ -10,7 +10,7 @@ Floating islands along the top, left or right. **Settings → Bar position** mov
 - **Clock**: the digits roll as they change, and hovering changes Roboto Flex's weight. A vertical bar stacks hours, minutes and optional seconds, with AM/PM for 12-hour time; the date stays on the top bar.
 - **Now playing** (a dancing equalizer): a click opens the player under the top bar or beside a vertical bar, a middle click pauses or plays. The vertical island omits the title.
 - **Tray**, network, Bluetooth, volume and battery. Tray menus open beside a vertical bar. Tray icons are resolved from absolute files, application-provided icon directories or the desktop icon theme, with supplied pixmaps and title initials as fallbacks.
-- **Extra functions**: right-click the system-controls island to open a full Quick Settings panel page, titled “Extra functions.” It describes and runs Screen recording or Hyprpicker; Hyprpicker waits one second, then copies the selected color with `wl-copy` (requires `hyprpicker` and `wl-copy`).
+- **Extra functions**: right-click the system-controls island or use the tools button beside Settings in Quick Settings to open a full panel page titled “Extra functions.” The Screen recording action turns red and says “Recording” while active; Hyprpicker waits one second, then copies the selected color with `wl-copy` (requires `hyprpicker` and `wl-copy`).
 
 ## Dock
 
