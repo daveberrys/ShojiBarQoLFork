@@ -8,11 +8,15 @@ use crate::ui::*;
 use anti_webui::prelude::*;
 use anti_webui::shell::prelude::*;
 use anti_webui_md3e::components::{
-    Date, MaterialShape, ShapeStyle, circular_wavy_progress, styled_shape,
+    ButtonSize, ButtonStyle, Date, MaterialShape, ShapeStyle, circular_wavy_progress,
+    styled_button, styled_shape,
 };
 use anti_webui_md3e::icons::{self, Symbol};
 use anti_webui_md3e::motion::fast_spatial;
 use std::cell::Cell;
+use std::path::PathBuf;
+use std::process::{Command, Stdio};
+use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 use std::time::{Duration, Instant};
 
 pub fn panel() -> Div {
@@ -29,8 +33,9 @@ pub fn panel() -> Div {
         })
         .child(settle_in(0, header()))
         .child(settle_in(1, month_view()))
+        .child(settle_in(6, kde_connect()))
         // After the days, which come in over about a quarter of a second.
-        .child(settle_in(6, gauges()))
+        .child(settle_in(7, gauges()))
 }
 
 /// The time with its seconds rolling, and the day.
@@ -410,6 +415,286 @@ fn day(date: Date, of_month: bool, today: Memo<Date>) -> Div {
                 c.on_surface.with_alpha(0.38)
             })
         })
+}
+
+/// One reachable phone, as reported by KDE Connect.
+#[derive(Clone, PartialEq)]
+struct Phone {
+    id: String,
+    name: String,
+    battery: Option<PhoneBattery>,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+struct PhoneBattery {
+    charge: u8,
+    charging: bool,
+}
+
+/// Runs the cheap KDE Connect queries away from the UI thread while this card is on screen.
+/// `kdeconnect-cli --help` documents the device-listing and sharing flags; battery state lives in
+/// the daemon's battery D-Bus plugin.
+fn watch_phone(phone: Signal<Option<Phone>>) {
+    let alive = Arc::new(AtomicBool::new(true));
+    let stop = alive.clone();
+    on_cleanup(move || stop.store(false, Ordering::Relaxed));
+    let to_ui = ui_channel(move |next| phone.set(next));
+    let _ = std::thread::Builder::new()
+        .name("shoji-bar-4 KDE Connect".into())
+        .spawn(move || {
+            while alive.load(Ordering::Relaxed) {
+                to_ui.send(reachable_phone());
+                // A short, interruptible wait avoids leaving a polling thread behind after the
+                // calendar closes, while keeping the phone's battery reasonably fresh.
+                for _ in 0..100 {
+                    if !alive.load(Ordering::Relaxed) {
+                        return;
+                    }
+                    std::thread::sleep(Duration::from_millis(100));
+                }
+            }
+        });
+}
+
+/// The first paired and reachable phone. KDE Connect's `--id-name-only` output is deliberately
+/// machine-readable: an id, one space, then the display name.
+fn reachable_phone() -> Option<Phone> {
+    let output = Command::new("kdeconnect-cli")
+        .args(["--list-available", "--id-name-only"])
+        .stdin(Stdio::null())
+        .stderr(Stdio::null())
+        .output()
+        .ok()
+        .filter(|out| out.status.success())?;
+    let listed = String::from_utf8_lossy(&output.stdout);
+    let line = listed
+        .lines()
+        .find(|line| !line.trim().is_empty())?;
+    let (id, name) = line.split_once(' ')?;
+    if id.is_empty() || name.trim().is_empty() {
+        return None;
+    }
+    let id = id.to_owned();
+    Some(Phone {
+        battery: phone_battery(&id),
+        id,
+        name: name.trim().to_owned(),
+    })
+}
+
+/// Reads the properties KDE Connect's battery plugin exports for a device. A missing plugin is
+/// normal (for example, a desktop peer), so the phone can still be shown without a percentage.
+fn phone_battery(id: &str) -> Option<PhoneBattery> {
+    let path = format!("/modules/kdeconnect/devices/{id}/battery");
+    let output = Command::new("gdbus")
+        .args([
+            "call",
+            "--session",
+            "--dest",
+            "org.kde.kdeconnect",
+            "--object-path",
+            &path,
+            "--method",
+            "org.freedesktop.DBus.Properties.GetAll",
+            "org.kde.kdeconnect.device.battery",
+        ])
+        .stdin(Stdio::null())
+        .stderr(Stdio::null())
+        .output()
+        .ok()
+        .filter(|out| out.status.success())?;
+    let properties = String::from_utf8_lossy(&output.stdout);
+    if !properties.contains("'hasBattery': <true>") {
+        return None;
+    }
+    let charge = properties
+        .split("'charge': <")
+        .nth(1)?
+        .chars()
+        .skip_while(|c| !c.is_ascii_digit())
+        .take_while(|c| c.is_ascii_digit())
+        .collect::<String>()
+        .parse()
+        .ok()?;
+    Some(PhoneBattery {
+        charge,
+        charging: properties.contains("'isCharging': <true>"),
+    })
+}
+
+/// KDE Connect in the calendar: the reachable phone, its current charge, and file sharing.
+fn kde_connect() -> Div {
+    let phone = signal(None::<Phone>);
+    watch_phone(phone);
+    div()
+        .flex()
+        .flex_col()
+        .gap(10.0_f32)
+        .px(16.0_f32)
+        .py(14.0_f32)
+        .rounded(20.0_f32)
+        .dyn_style(|s| s.bg(colors().surface_container_high))
+        .child(
+            div()
+                .flex()
+                .flex_row()
+                .items_center()
+                .gap(8.0_f32)
+                .child(sym(icons::DEVICES, 18.0, |c| c.primary))
+                .child(static_txt(TextStyle::TITLE_SMALL, "KDE Connect")),
+        )
+        .child(dyn_view(move || match phone.get() {
+            Some(phone) => connected_phone(phone),
+            None => static_txt(TextStyle::BODY_SMALL, "No reachable phone")
+                .dyn_style(|s| s.text_color(colors().on_surface_variant)),
+        }))
+}
+
+fn connected_phone(phone: Phone) -> Div {
+    let battery = phone.battery.map_or_else(
+        || "Battery unavailable".to_owned(),
+        |battery| {
+            let state = if battery.charging { "Charging" } else { "On battery" };
+            format!("{}% · {state}", battery.charge)
+        },
+    );
+    div()
+        .flex()
+        .flex_row()
+        .items_center()
+        .gap(12.0_f32)
+        .child(sym(icons::SMARTPHONE, 24.0, |c| c.on_surface_variant))
+        .child(
+            div()
+                .flex()
+                .flex_col()
+                .flex_1()
+                .min_w(0.0)
+                .child(static_txt(TextStyle::TITLE_MEDIUM, phone.name.clone()))
+                .child(
+                    static_txt(TextStyle::BODY_SMALL, battery)
+                        .dyn_style(|s| s.text_color(colors().on_surface_variant)),
+                ),
+        )
+        .child(
+            styled_button(
+                "Send files",
+                ButtonStyle::tonal()
+                    .size(ButtonSize::ExtraSmall)
+                    .icon(icons::SEND),
+            )
+            .on_click(move |_| choose_files(phone.clone())),
+        )
+}
+
+#[derive(Clone)]
+struct ShareResult {
+    output: Option<String>,
+    device: String,
+    sent: usize,
+    failed: bool,
+}
+
+thread_local! {
+    // This channel must outlive the calendar panel: the panel is closed so Zenity's chooser is
+    // not hidden by the layer surface, then reopened when the chooser and transfer have finished.
+    static SHARE_RESULT: Cell<Option<UiSender<ShareResult>>> = const { Cell::new(None) };
+}
+
+fn share_result_sender() -> UiSender<ShareResult> {
+    SHARE_RESULT.with(|cell| {
+        let sender = cell.take().unwrap_or_else(|| {
+            create_root(|| {
+                ui_channel(|result: ShareResult| {
+                    if result.sent > 0 {
+                        let _ = Command::new("notify-send")
+                            .args([
+                                "-a",
+                                "shoji-bar-4",
+                                "Files sent",
+                                &format!("Sent {} file(s) to {}", result.sent, result.device),
+                            ])
+                            .spawn();
+                    } else if result.failed {
+                        let _ = Command::new("notify-send")
+                            .args([
+                                "-a",
+                                "shoji-bar-4",
+                                "Could not send files",
+                                &format!("KDE Connect could not send files to {}", result.device),
+                            ])
+                            .spawn();
+                    }
+                    if let Some(output) = result.output {
+                        crate::panels::open(&output, crate::panels::Panel::Calendar);
+                    }
+                })
+            })
+            .0
+        });
+        cell.set(Some(sender.clone()));
+        sender
+    })
+}
+
+/// Lets the user choose one or more files, then sends each through KDE Connect's `--share` flag.
+fn choose_files(phone: Phone) {
+    let output = crate::panels::current().map(|(output, _)| output);
+    crate::panels::close();
+    let to_ui = share_result_sender();
+    let _ = std::thread::Builder::new()
+        .name("shoji-bar-4 KDE Connect share".into())
+        .spawn(move || {
+            let chosen = Command::new("zenity")
+                .args([
+                    "--file-selection",
+                    "--multiple",
+                    "--separator=\n",
+                    "--title",
+                    &format!("Send files to {}", phone.name),
+                ])
+                .stdin(Stdio::null())
+                .output()
+                .ok()
+                .filter(|out| out.status.success())
+                .map(|out| {
+                    String::from_utf8_lossy(&out.stdout)
+                        .lines()
+                        .map(PathBuf::from)
+                        .collect::<Vec<_>>()
+                })
+                .unwrap_or_default();
+            if chosen.is_empty() {
+                to_ui.send(ShareResult {
+                    output,
+                    device: phone.name,
+                    sent: 0,
+                    failed: false,
+                });
+                return;
+            }
+            let mut sent = 0;
+            let mut failed = false;
+            for path in chosen {
+                let status = Command::new("kdeconnect-cli")
+                    .args(["--device", &phone.id, "--share"])
+                    .arg(path)
+                    .stdin(Stdio::null())
+                    .stderr(Stdio::null())
+                    .status();
+                if status.is_ok_and(|status| status.success()) {
+                    sent += 1;
+                } else {
+                    failed = true;
+                }
+            }
+            to_ui.send(ShareResult {
+                output,
+                device: phone.name,
+                sent,
+                failed,
+            });
+        });
 }
 
 /// CPU, memory and temperature as wavy rings.
