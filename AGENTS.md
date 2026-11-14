@@ -25,6 +25,7 @@ The app bootstraps a shell root in `main.rs`, then starts the IPC daemon, theme 
 - `src/theme.rs`: MD3 scheme generation, dynamic colors, wallpaper-based seed extraction, animated transitions
 - `src/bar.rs`: primary bar UI and islands for workspaces, title, media, status, tray, clock
 - `src/quick_settings.rs` and `src/qs_settings.rs`: quick settings panel and settings page
+- `src/extra_functions.rs`: Extra functions page for screen recording and Hyprpicker
 - `src/lock.rs`, `src/notify.rs`, `src/osd.rs`, `src/dock.rs`, `src/launcher.rs`, `src/clipboard.rs`, `src/media_panel.rs`, `src/calendar.rs`, `src/power_dialog.rs`: concrete shell surfaces and behavior
 - `src/wm.rs`: ShojiWM IPC/theme syncing
 - `src/ipc.rs`: socket-based control commands
@@ -40,6 +41,14 @@ Important runtime principles:
 - The shell uses `anti_webui` reactive signals/memos/effects to update UI state in response to settings and system changes.
 - Most of the code is declarative Rust UI building, not imperative DOM code.
 - Theme changes and placement updates are animated via the reactive system and Material motion.
+
+## Extra functions and screen recording
+
+- `src/extra_functions.rs` owns the full Quick Settings Extra functions page. It can be opened by right-clicking the bar's system-controls island or by using the tools icon in the Quick Settings header, beside Settings and Power. The header icon navigates to the page; it is not a recording toggle.
+- Screen recording is controlled on the Extra functions page. Its action updates in place to a red stop/recording state while recording, and clicking it again stops the recording. Keep this status indicator on the action rather than adding a separate recording button beside Settings or Power.
+- `src/screenrec.rs` holds the recording state and delivers worker-thread start/stop events to the UI. Call `screenrec::install()` during shell startup before transient panels are created; this establishes the long-lived reactive state and event channel so panel disposal cannot invalidate recording updates.
+- The Extra functions page also offers Hyprpicker. It waits one second before launching the picker, then sends its stdout to `wl-copy`.
+- Keep this behavior aligned with `docs/features.md`, including both entry points and the location of the recording indicator.
 
 ## Settings and persistence
 
@@ -195,6 +204,7 @@ See `docs/development.md` for the full preview and CPU-report flow.
 - `src/bar.rs`: primary bar and islands
 - `src/dock.rs`: dock behavior and context menu
 - `src/quick_settings.rs`: quick settings panel and controls
+- `src/extra_functions.rs`: Extra functions page and Hyprpicker action
 - `src/qs_settings.rs`: settings subpage UI
 - `src/launcher.rs`: launcher panel
 - `src/clipboard.rs`: clipboard history
