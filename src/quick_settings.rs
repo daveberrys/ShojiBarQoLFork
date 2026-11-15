@@ -14,6 +14,7 @@ use anti_webui_md3e::components::{SliderStyle, sized_icon, styled_slider};
 use anti_webui_md3e::icons::{self, Symbol};
 use anti_webui_md3e::motion::fast_spatial;
 use std::cell::Cell;
+use std::process::Command;
 
 const WIDTH: f32 = 396.0;
 
@@ -613,7 +614,14 @@ fn tiles() -> Div {
                             } else {
                                 ThemeMode::Dark
                             }
-                        })
+                        });
+                        let _ = Command::new("gsettings")
+                            .args([
+                                "set",
+                                "org.gnome.desktop.interface",
+                                "color-scheme",
+                                if dark() {"prefer-dark"} else {"prefer-light"},
+                            ]).spawn();
                     },
                     None,
                 ))
