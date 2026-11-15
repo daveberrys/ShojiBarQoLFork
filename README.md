@@ -22,6 +22,7 @@ This fork introduces quality-of-life features, Noctalia-inspired additions, and 
 - **QoL improvements**: Various personal fixes and polish throughout the shell.
 - **KDE Connect**: Show your phone's battery and send files from it.
 - **Light & Dark**: Supported apps follow Shoji’s selected theme.
+- **Launcher right click**: Shows a extra menu for apps that have extra functions.
 
 *For more feature implementation, please check ![feautes.md](./docs/features.md)*
 
