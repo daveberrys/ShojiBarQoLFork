@@ -21,6 +21,7 @@ This fork introduces quality-of-life features, Noctalia-inspired additions, and 
 - **External monitor brightness**: Brightness control via `ddcutil`.
 - **QoL improvements**: Various personal fixes and polish throughout the shell.
 - **KDE Connect**: Show your phone's battery and send files from it.
+- **Light & Dark**: Supported apps follow Shoji’s selected theme.
 
 *For more feature implementation, please check ![feautes.md](./docs/features.md)*
 
