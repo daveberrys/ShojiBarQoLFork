@@ -53,6 +53,7 @@ The icon under the pointer lifts a little and shows its name.
 
 - It opens in the middle of the screen, its items coming in one after another.
 - The grid rearranges itself (FLIP) as you search.
+- Right-click an app with desktop actions to open its actions menu; choosing one runs that action.
 - Arrow keys, Enter and Escape work.
 
 ## Player

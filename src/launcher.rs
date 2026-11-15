@@ -7,6 +7,7 @@ use crate::theme::{TextStyle, colors, elevation};
 use crate::ui::*;
 use anti_webui::prelude::*;
 use anti_webui::shell::prelude::*;
+use anti_webui_md3e::components::{MenuStyle, menu_item, styled_menu};
 use anti_webui_md3e::icons;
 use anti_webui_md3e::motion::fast_spatial;
 use std::time::Duration;
@@ -173,9 +174,13 @@ fn cell(
         })
         .unwrap_or_default();
     let icon = app.as_ref().and_then(|a| app_icon(a, 128));
+    let actions = app.map(|a| a.actions).unwrap_or_default();
+    let has_actions = !actions.is_empty();
     let chosen = memo(move || index.get() == Some(picked.get()));
     let hovered = signal(false);
     let pressed = signal(false);
+    let menu_open = signal(false);
+    let menu_anchor = node_ref();
     let hop = follow(
         move || if hovered.get() { 1.0 } else { 0.0 },
         fast_spatial(),
@@ -197,6 +202,7 @@ fn cell(
         .h(CELL_H)
         .flex_none()
         .p(4.0_f32)
+        .node_ref(menu_anchor)
         .on_hover(move |h| {
             hovered.set(h);
             if h && let Some(i) = index.get() {
@@ -204,6 +210,11 @@ fn cell(
             }
         })
         .on_active(move |a| pressed.set(a))
+        .on_pointer_down(move |e| {
+            if has_actions && e.button == Some(PointerButton::Secondary) {
+                menu_open.set(true);
+            }
+        })
         .on_click(move |_| launch(&launch_id))
         .child(
             div()
@@ -276,6 +287,24 @@ fn cell(
                                 c.on_surface
                             })
                         }),
-                ),
+                )
+                .child(styled_menu(
+                    move || menu_open.get(),
+                    move || menu_open.set(false),
+                    vec![
+                        actions
+                            .into_iter()
+                            .map(|action| {
+                                menu_item(action.name.clone()).on_click(move || {
+                                    action.launch();
+                                    close();
+                                })
+                            })
+                            .collect(),
+                    ],
+                    MenuStyle::new()
+                        .placement(Placement::BelowStart)
+                        .anchor(menu_anchor),
+                )),
         )
 }
