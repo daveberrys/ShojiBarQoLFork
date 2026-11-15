@@ -5,7 +5,7 @@
 Floating islands along the top, left or right. **Settings → Bar position** moves the bar immediately.
 
 - **Launcher button**: its Material Shape morphs (Cookie4 → Cookie9 → Circle).
-- **Workspaces**: a marker that stretches as it moves, its leading edge on a fast spring and its trailing edge on a slow one. The mouse wheel switches workspaces too. When workspaces come and go, their places open and close and the island follows along the bar.
+- **Workspaces**: dots mark each workspace, with a filled circle for the active one. Click a dot or use the mouse wheel to switch workspaces; when workspaces come and go, their places open and close and the island follows along the bar.
 - **Active window**: on the top bar, its icon and title. A new window, or a new title, comes up from below as the last one goes up, and the island follows its width on a spring, however fast they change. A title wider than the island for the moment fades out at its edge. A few characters changing in one place (a spinner like Claude Code's, a counter, a clock) change where they are, without the title coming up again. A vertical bar shows the application icon only.
 - **Clock**: the digits roll as they change, and hovering changes Roboto Flex's weight. A vertical bar stacks hours, minutes and optional seconds, with AM/PM for 12-hour time; the date stays on the top bar.
 - **Now playing** (a dancing equalizer): a click opens the player under the top bar or beside a vertical bar, a middle click pauses or plays. The vertical island omits the title.

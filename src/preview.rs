@@ -129,7 +129,6 @@ pub fn run(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
             "workspaces" => {
                 let ws = |i: u32, active: bool| crate::bar::Ws {
                     id: i.to_string(),
-                    name: i.to_string(),
                     active,
                     empty: false,
                     urgent: false,
