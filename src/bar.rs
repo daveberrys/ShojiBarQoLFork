@@ -12,12 +12,25 @@ use crate::ui::*;
 use anti_webui::prelude::*;
 use anti_webui::shell::prelude::*;
 use anti_webui::shell::{BatteryState, Connectivity, MenuToggle, TrayMenuItem};
-use anti_webui_md3e::components::{MenuItem, MenuStyle, menu_item, styled_menu};
+use anti_webui_md3e::components::{
+    MaterialShape, MenuItem, MenuStyle, ShapeStyle, menu_item, styled_menu, styled_shape,
+};
 use anti_webui_md3e::icons;
 use anti_webui_md3e::motion::{fast_spatial, slow_spatial};
 use std::cell::{Cell, RefCell};
+use std::collections::hash_map::RandomState;
+use std::hash::BuildHasher;
 use std::rc::Rc;
 use std::time::Duration;
+
+const DOTS: [MaterialShape; 6] = [
+    MaterialShape::Cookie4Sided,
+    MaterialShape::Clover4Leaf,
+    MaterialShape::Sunny,
+    MaterialShape::Circle,
+    MaterialShape::Cookie6Sided,
+    MaterialShape::Flower,
+];
 
 pub fn view(output: Output, at: BarPlacement) -> Div {
     let vertical = at.is_vertical();
@@ -155,9 +168,10 @@ fn workspaces_of(output: Output) -> Memo<Vec<Ws>> {
 const SLOT: f32 = 18.0;
 const TRACK: f32 = 22.0;
 
-/// The workspaces of the output as dots, with a filled circle marking the active one.
+/// The workspaces of the output as randomly shaped markers, with the active one emphasized.
 pub fn workspaces_island(list: Memo<Vec<Ws>>, activate: Rc<dyn Fn(&str)>, at: BarPlacement) -> Div {
     let vertical = at.is_vertical();
+    let shape_randomizer = RandomState::new();
     // Between one workspace going and the next coming there may be none: keep the last active slot.
     let last = Cell::new(0);
     let active = memo(move || {
@@ -174,6 +188,7 @@ pub fn workspaces_island(list: Memo<Vec<Ws>>, activate: Rc<dyn Fn(&str)>, at: Ba
             |w| w.id.clone(),
             move |w| {
                 let id = w.id.clone();
+                let shape = DOTS[shape_randomizer.hash_one(&id) as usize % DOTS.len()];
                 // Once gone from the list it leaves as it was, without turning back into a dot.
                 let seen = std::cell::RefCell::new(w.clone());
                 let me = memo(move || {
@@ -185,6 +200,19 @@ pub fn workspaces_island(list: Memo<Vec<Ws>>, activate: Rc<dyn Fn(&str)>, at: Ba
                 let on = memo(move || me.with(|w| w.active));
                 let empty = memo(move || me.with(|w| w.empty));
                 let urgent = memo(move || me.with(|w| w.urgent));
+                let turn = follow(move || if on.get() { 360.0 } else { 0.0 }, fast_spatial());
+                let scale = follow(
+                    move || {
+                        if on.get() {
+                            1.0
+                        } else if empty.get() {
+                            5.0 / 16.0
+                        } else {
+                            6.0 / 16.0
+                        }
+                    },
+                    fast_spatial(),
+                );
                 let activate = activate.clone();
                 let slot = if vertical {
                     div().relative().w(TRACK).flex_none().h(SLOT)
@@ -199,29 +227,27 @@ pub fn workspaces_island(list: Memo<Vec<Ws>>, activate: Rc<dyn Fn(&str)>, at: Ba
                         .items_center()
                         .justify_center()
                         .pointer_events_none()
-                        .child(div().rounded(5.0_f32).transition(overshoot(350)).dyn_style(
-                            move |s| {
-                                let c = colors();
-                                let is_active = on.get();
-                                let size = if is_active {
-                                    16.0
-                                } else if empty.get() {
-                                    5.0
-                                } else {
-                                    6.0
-                                };
-                                let color = if is_active {
-                                    c.primary
-                                } else if urgent.get() {
-                                    c.error
-                                } else if empty.get() {
-                                    c.outline_variant
-                                } else {
-                                    c.on_surface_variant
-                                };
-                                s.size(size).bg(color)
-                            },
-                        )),
+                        .child(
+                            styled_shape(
+                                move || shape,
+                                ShapeStyle::new()
+                                    .color(move |c| {
+                                        if on.get() {
+                                            c.primary
+                                        } else if urgent.get() {
+                                            c.error
+                                        } else if empty.get() {
+                                            c.outline_variant
+                                        } else {
+                                            c.on_surface_variant
+                                        }
+                                    })
+                                    .rotation(move || turn.get())
+                                    .spring(fast_spatial()),
+                            )
+                            .size(16.0)
+                            .dyn_style(move |s| s.scale(scale.get())),
+                        ),
                 )
             },
         )
