@@ -52,6 +52,42 @@ cargo build --release
 ## Getting nightly.link
 https://nightly.link/daveberrys/shoji-bar-4/workflows/ci/main/shoji-bar-4-dvs-fork.zip
 
+## Restarting after a crash on other window managers.
+
+To restart the bar automatically after a crash, create `~/.local/bin/reloop`:
+
+```sh
+mkdir -p ~/.local/bin
+cat > ~/.local/bin/reloop <<'EOF'
+#!/bin/sh
+
+if [ "$#" -eq 0 ]; then
+    echo "usage: restart.sh PROGRAM [ARG ...]" >&2
+    exit 2
+fi
+
+while :; do
+    "$@"
+    status=$?
+    if [ "$status" -eq 0 ]; then
+        exit 0
+    fi
+
+    echo "$@: process exited with status $status; restarting in 1 second" >&2
+    sleep 1
+done
+EOF
+chmod +x ~/.local/bin/reloop
+```
+
+Add this command to your window manager autostart:
+
+```sh
+$HOME/.local/bin/reloop-shoji [path_to_shoji_bar] & disown
+```
+
+The restart script waits one second and retries if the bar exits with an error. A clean exit, such as `shoji-bar-4 msg quit`, is not restarted. Update `[path_to_shoji_bar]` to where Shoji bar is installed.
+
 ## Documentation
 
 - [Features](docs/features.md): everything the shell does, part by part.

@@ -16,7 +16,7 @@ ShojiWM's default config already does everything here. For a config of your own,
 ```ts
 const SHOJI_BAR_4 = "~/.config/shoji-bar-4/target/release/shoji-bar-4";
 COMPOSITOR.process.once("shell", {
-  command: `exec ${SHOJI_BAR_4}`,
+  command: `exec sh ~/.config/shoji-bar-4/scripts/restart.sh ${SHOJI_BAR_4}`,
   runPolicy: "once-per-session",
 });
 
@@ -26,6 +26,8 @@ function toggleLauncher() {
 }
 COMPOSITOR.key.bind("launcher", "Super+A", toggleLauncher);
 ```
+
+The restart wrapper retries after a crash or other nonzero exit, with a one-second delay. A clean exit (such as `shoji-bar-4 msg quit`) is not restarted.
 
 The window frames can follow the shell's colors:
 
